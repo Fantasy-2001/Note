@@ -50,12 +50,12 @@ directory：本地目录
 
 ### 远程操作
 
-|    提交    |        说明        |
-| :--------: | :----------------: |
-| git remote |    远程仓库操作    |
-| git fetch  |  从远程获取代码库  |
-|  git pull  | 下载远程代码并合并 |
-|  git push  | 上传远程代码并合并 |
+|    提交    |                    说明                    |
+| :--------: | :----------------------------------------: |
+| git remote |                远程仓库操作                |
+| git fetch  |              从远程获取代码库              |
+|  git pull  |             下载远程代码并合并             |
+|  git push  | 上传远程代码并合并（git push -f 强推覆盖） |
 
 ### 分支管理
 
@@ -72,6 +72,8 @@ git merge (branchname)		//合并分支
 ``` git
 //添加一个新的远程仓库
 git remote add [shortname] [url]
+//修改远程仓库地址
+git remote set-url origin [url]
 
 //生成密钥
 ssh-keygen -t rsa -C "youremail@example.com"
@@ -81,6 +83,10 @@ ssh -T git@github.com
 git remote
 //添加一个远程仓库命名为 origin
 git remote add origin git@github.com:githubname/cangkuname.git
+//查看所有远程仓库
+git remote
+//查看指定远程仓库地址
+git remote -v
 //删除
 git remote rm 远程仓库名
 //推送
@@ -109,5 +115,31 @@ git remote add origin [url]
 git pull origin main
 //上传到远程仓库的 main 分支
 git push -u origin main
+
+注意！！！
+//电脑重启后需要删除远程仓库后再添加才可以 push or pull
+//如果提交至非主分支，本地仓库必须建该分支
+```
+
+### git 回退版本
+
+```Git
+//查看版本编号
+git log
+//回退至目标版本，但目标版本之后提交都不存在了
+git reset --hard 版本编号
+//把暂存区中的文件拉回工作区
+git checkout 文件名
+//回退版本可能会出现比远程仓库版本低的情况，就需要进行强制推送
+git push -f
+
+//revert 与 reset 不同，该指令会生成一个新版本
+git revert -n 版本号
+//^^^这里可能会出现冲突，那么需要手动修改冲突的文件。而且要git add 文件名。
+git commit -m "版本号"
+//推送
+git push
+
+
 ```
 
