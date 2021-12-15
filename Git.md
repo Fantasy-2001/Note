@@ -33,7 +33,7 @@ directory：本地目录
 
 |    命令    |                  说明                  |
 | :--------: | :------------------------------------: |
-|  git add   |             添加文件到仓库             |
+|  git add   |            添加文件到暂存区            |
 | git status |  查看仓库当前的状态，显示有变更的文件  |
 |  git diff  | 比较文件的不同，即暂存区和工作区的差异 |
 | git commit |          提交暂存区到本地仓库          |
@@ -61,7 +61,7 @@ directory：本地目录
 
 ``` git
 git branch		//查看所有分支及当前所在分支
-git branch (branchname)		//创建分支
+git branch (branchname)		//创建分支，创建分支确认其他分支有提交
 git branch -d (branchname)	//删除分支
 git checkout (branchname)	//切换分支
 git merge (branchname)		//合并分支
@@ -85,5 +85,29 @@ git remote add origin git@github.com:githubname/cangkuname.git
 git remote rm 远程仓库名
 //推送
 git push -u origin master
+```
+
+### HTTPS 远程仓库
+
+```git
+//初始化本地仓库
+git init
+//查看仓库当前的状态，显示有变更的文件
+git status
+//提交所有文件至暂存区
+git add .
+//提交至本地仓库
+git commit -m "注释"
+//查看历史提交记录
+git log
+//查看所有的分支
+git branch
+
+//添加一个新的远程仓库
+git remote add origin [url]
+//修改之前先从远程仓库拉下来进行版本统一。main 是远程仓库的分支
+git pull origin main
+//上传到远程仓库的 main 分支
+git push -u origin main
 ```
 
