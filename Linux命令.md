@@ -879,3 +879,141 @@ ls -lR /opt | grep "^d" | wc -l	//使用过滤找到-开头的目录用wc统计�
 tree 目录		//如果没有该该指令，使用 yum install tree 安装
 ```
 
+
+
+## 网络配置
+
+### 网络连接的三种模式
+
+**桥接模式：**与物理在同一个网段下，但会占用一个ip，当ip不够分配时会造成ip冲突
+
+**NAT：**会生成一个虚拟网卡，虚拟机的ip与虚拟网卡的ip互通，虚拟网卡通过物理机ip连接外网，不造成ip冲突**（推荐使用）**
+
+**主机模式：**独立系统，不和外界发生联系
+
+### ifconfig
+
+```Linux
+ifconfig		//查看网络配置
+```
+
+
+
+### ping
+
+```Linux
+ping 目的主机		//测试当前服务器是否可以连接目的主机
+```
+
+
+
+### 指定ip
+
+```Linux
+vi /etc/sysconfig/network-scripts/ifcfg-ens33 //ens33是网卡使用ifconfig查看
+
+/*
+DEVICE=eth0
+HWADDR=00:0C:2x:6x:0x:xx
+TYPE=Ethernet
+UUID=926a57ba-92c6-4231-bacb-f27e5e6a9f44
+ONBOOT=yes
+#IP的配置方法[none|static|bootp|dhcp](引导时不使用协议|静态分配IP|BOOTP协议|DHCP协议)
+//复制如下
+BOOTPROTO=static		//该参数一般会存在，存在修改成static就好了
+#IP地址
+IPADDR=192.168.200.130		//复制修改需要的ip
+#网关
+GATEWAY=192.168.200.2		//复制修改
+#域名解析器
+DNS1=192.168.200.2			//复制修改
+*/
+
+//NAT模式下还需要再VM下修改虚拟网络编辑器ip使其与虚拟机在一个网段下
+
+//配置后重启网络服务或者重启系统生效
+service network restart		||		reboot
+```
+
+
+
+### hostname 设置主机名 && 修改主机名
+
+```Linux
+hostname		//查看主机名
+
+vi /etc/hostname		//进入文件修改主机名
+reboot					//修改后重启系统
+```
+
+
+
+### 设置hosts映射
+
+```Linux
+ping 主机名	//需要通过主机名映射ip，才可ping通
+
+//windows：
+在C:\Windows\System32\drivers\etc\hosts 文件指定即可
+例子：192.168.200.130 hspedu100
+
+//Linux
+在 /etc/hosts 文件 指定
+例子：192.168.200.1 ThinkPad-PC
+```
+
+
+
+### 主机名解析过程分析
+
+```Linux
+Hosts是一个文本文件，用来记录 IP 和 Hostname（主机名）的映射关系
+1. DNS，Domain Nmae System的缩写，翻译过来是域名系统
+2. 是互联网上作为域名和 IP 地址相互映射的分布式数据库
+
+//查找顺序
+1. 浏览器缓存中是否存在该域名的解析IP地址
+2. 电脑第一次成功访问某一网站后，在一定时间内浏览器和系统会缓存IP地址（DNS解析记录）。这两个缓存可以理解为本地解析器缓存
+windowns：
+ipconfig /displaydns	//DNS域名解析缓存
+ipconfig /flushdns		//手动清理DNS缓存
+3. 如果本地解析器缓存没有找到对应映射，则检查hosts文件中有没有配置对应的域名IP映射
+4. 如果 本地DNS解析器缓存 和 host文件都没有，则到域名服务DNS进行解析域名
+```
+
+
+
+## 进程管理
+
+在Linux中，每个执行的程序都称为一个进程。每一个进程都分配一个ID号（pid，进程号）
+
+
+
+### ps 显示系统指定的进程
+
+```Linux
+ps [选项]
+-a：显示当前终端的所有进程信息
+-u：以用户的格式显示进程信息
+-x：显示后台进程运行的参数
+
+/*
+PID		进程识别号
+TTY		终端机号
+TIME	此进程所消 CPU 时间
+CMD		正在执行的命令或进程名
+*/
+
+USER：用户名称
+PID：进程号
+%CPU：进程占用CPU的百分比
+%MEM：进程占用物理内存的百分比
+VSZ：进程占用的虚拟内存大小（单位：KB）
+RSS：进程占用的物理内存大小（单位：KB）
+TT：终端名称，缩写
+STAT：进程状态，其中S-睡眠，s-表示该进程是会话的先导进程，N-表示进程拥有比普通优先级更低的优先级，R-正在运行，D-短期等待，Z-僵死进程，T-被追踪或者被停止等等
+STARTED：进程的启动时间
+TIME：CPU时间，即进程使用CPU的总时间
+COMMAND：启动进程所有的命令和参数，如果过长会被截断显示
+```
+
