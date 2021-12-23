@@ -1017,3 +1017,127 @@ TIME：CPU时间，即进程使用CPU的总时间
 COMMAND：启动进程所有的命令和参数，如果过长会被截断显示
 ```
 
+
+
+### 父子进程
+
+父进程：可以创建多个子进程，多线程，如果关闭了父线程子线程也会被杀掉
+
+```Linux
+ps -ef		//全格式显示当前所有的进程
+-e 显示所有进程。  -f 全格式
+
+/*
+UID：用户ID
+PID：进程ID
+PPID：父进程ID
+C：CPU用于计算机执行优先级的因子，数值越大，表明进程是CPU密集型运算，执行优先级会降低；
+数值越小，表明进程是I/O密集型运算，执行优先级会提高
+STIME：进程启动的时间
+TTY：完整的终端名称
+TIME：CPU时间
+CMD：启动进程所用的命令和参数
+*/
+```
+
+
+
+### 终止进程 kill 和 killall
+
+```Linux
+kill [选项] 进程号（功能描述：通过进程号杀死进程）
+killall 进程名称（功能描述：通过进程名称杀死进程，也支持通配符，这在系统因负载过大而变得很慢时很有用）
+
+/*
+-9：表示强迫进程立即停止
+*/
+```
+
+
+
+### 查看进程树 pstree
+
+```Linux
+pstree [选项] 	//可以更加直观的来看进程信息
+
+/*
+-p：显示进程的PID
+-u：显示进程的所属用户
+*/
+```
+
+
+
+## 服务管理
+
+服务（service）本质就是进程，但是是运行在后台的，通常都会监听某个端口，等待其他程序的请求，比如（mysqld，sshd 防火墙等），因此我们又称为守护进程
+
+### service管理指令 
+
+```Linux
+service 服务名[start | stop | restart | reload | status]
+setup		//可以查看所有的服务
+
+/*
+在CentOS7后 很多服务不再使用service，而是 systemctl
+service 指令管理的服务在 /etc/init.d 查看
+*/
+```
+
+#### 开机流程 && 运行级别设置
+
+**开机** -> **BIOS** -> **/boot** -> **systemd进程1** -> **运行级别** -> **运行级对应的服务**
+
+```Linux
+multi-user.target:analogous to runlevel 3		//多用户级别
+graphical.target:analogous to runlevel 5		//图形化界面级别
+
+/*
+systemctl get-default		//查看当前级别
+systemctl set-default TARGET.target		//设置级别
+
+设置好后需要重启系统，每次启动时就会进入设置的运行级别
+*/
+```
+
+
+
+### chkconfig 指令运行级别
+
+通过 chkconfig 命令可以给服务的各个运行级别设置自 启动/关闭
+
+```Linux
+chkconfig --list [|grep xxx]
+chkconfig 服务名 --list
+chkconfig --level 5 服务名 on/off
+```
+
+
+
+### systemctl 管理指令
+
+```Linux
+systemctl [start | stop | restart | status] 服务名
+systemctl list-unit-files [| grep 服务名]（查看服务开机启动状态grep可以进行过滤）
+systemctl enable 服务名 （设置服务开机启动，在3和5的运行级别）
+systemctl disable 服务名（关闭服务开机启动，在3和5的运行级别）
+systemctl is-enabled 服务名（查询某个服务是否是自启动的）
+
+/*
+systemctl 指令管理的服务在 /usr/lib/systemd/system 查看
+*/
+```
+
+
+
+### firewall指令
+
+```Linux
+firewall-cmd --permanent --add-port=端口号/协议		//打开端口
+firewall-cmd --permanent --remove-port=端口号/协议		//关闭端口
+firewall-cmd --reload								//重新载入，才能生效
+firewall-cmd --query-port=端口/协议					//查询端口是否开放
+```
+
+
+
