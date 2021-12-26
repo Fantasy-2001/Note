@@ -933,6 +933,9 @@ DNS1=192.168.200.2			//复制修改
 
 //配置后重启网络服务或者重启系统生效
 service network restart		||		reboot
+
+
+ifconfig eth0 192.168.4.1 netmask 255.255.255.0 up
 ```
 
 
@@ -1242,7 +1245,10 @@ yum 是一个 Shell 前端软件包管理器。基于RPM包管理，能够从指
 
 ```Linux
 yum list | grep xxx			//查询yum服务器是否有需要安装的软件
+yum info xxx	//显示指定的rpm包的详细信息，这个包可以是安装过的或是没有安装过的，list是概要信息
 yum install xxx				//安装指定的yum包
+yum remove xxx				//移除，不会移除掉依赖组件
+yum update xxx				//更新
 ```
 
 
