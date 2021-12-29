@@ -917,12 +917,14 @@ DEVICE=eth0
 HWADDR=00:0C:2x:6x:0x:xx
 TYPE=Ethernet
 UUID=926a57ba-92c6-4231-bacb-f27e5e6a9f44
-ONBOOT=yes
+ONBOOT=yes				#no 改 yes
 #IP的配置方法[none|static|bootp|dhcp](引导时不使用协议|静态分配IP|BOOTP协议|DHCP协议)
 //复制如下
 BOOTPROTO=static		//该参数一般会存在，存在修改成static就好了
 #IP地址
 IPADDR=192.168.200.130		//复制修改需要的ip
+#子网掩码
+NETMASK=255.255.255.0
 #网关
 GATEWAY=192.168.200.2		//复制修改
 #域名解析器
@@ -933,6 +935,8 @@ DNS1=192.168.200.2			//复制修改
 
 //配置后重启网络服务或者重启系统生效
 service network restart		||		reboot
+//CentOS 8 重启网卡
+nmcli c reload ens33
 
 
 ifconfig eth0 192.168.4.1 netmask 255.255.255.0 up
@@ -1249,9 +1253,47 @@ yum info xxx	//显示指定的rpm包的详细信息，这个包可以是安装�
 yum install xxx				//安装指定的yum包
 yum remove xxx				//移除，不会移除掉依赖组件
 yum update xxx				//更新
+
+yum clean all		#清除缓存
+yum makecache		#重新生成缓存
+yum repolist all	#查看所有仓库
 ```
 
 
+
+### CentOS 8 使用本地源
+
+```Linux
+mount /dev/cdrom /media/		#挂载
+cd /etc/yum.repos.d/			
+mkdir ./back					#在该目录下创建文件夹
+mv *.repo ./back				#将所有扩展名 .repo 移动到 back目录下
+cp back/CentOS-Linux-Media.repo ./		#将...Media.repo 复制到该目录下
+
+/* 修改如下
+enable=0,全都修改成1
+file:///media/CentOS/BaseOS			修改后：file:///media/BaseOS
+file:///media/CentOS/AppStream		修改后：file:///media/AppStream
+*/
+```
+
+
+
+### CentOS 8 网络源配置
+
+```Linux
+mount /dev/cdrom /media/		#挂载
+cd /etc/yum.repos.d/			
+mkdir ./back					#在该目录下创建文件夹
+mv *.repo ./back				#将所有扩展名 .repo 移动到 back目录下
+cp back/CentOS-Linux-BaseOS.repo ./		#将...Media.repo 复制到该目录下
+
+/*修改如下
+然后编辑 /etc/yum.repos.d/ 中的相应文件，在 mirrorlist= 开头行前面加 # 注释掉；并将 baseurl= 开头行取消注释（如果被注释的话），把该行内的域名（例如mirror.centos.org）替换为 mirrors.tuna.tsinghua.edu.cn
+注意：如果需要启用其中一些 repo，需要将其中的 enabled=0 改为 enabled=1。
+*/
+yum makecache		#更新缓存
+```
 
 
 
