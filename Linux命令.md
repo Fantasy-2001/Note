@@ -1,6 +1,6 @@
 # Linux 系统目录结构
 
-![Linux 树状目录结构](D:\Markdown\image\Linux\Linux目录树状图.jpg)
+![Linux 树状目录结构](https://gitee.com/Fantasy2001/images/raw/master/Markdown/Linux/Linux目录树状图.jpg)
 
 - **/bin**：
   bin 是 Binaries (二进制文件) 的缩写, 这个目录存放着最经常使用的命令。
