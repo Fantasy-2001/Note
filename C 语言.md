@@ -2,10 +2,16 @@
 
 
 
+## 转义字符
+
+![image-20220116174517583](https://gitee.com/Fantasy2001/images/raw/master/Markdown/C%E8%AF%AD%E8%A8%80/%E8%BD%AC%E4%B9%89%E5%AD%97%E7%AC%A6%E8%A1%A8.png)
+
+
+
 ## 常量
 
 ```c
-#define NAME value		//常量的定义
+#define NAME Value		//常量的定义
 const int MONTHS = 12;		//const用于限定一个变量为只读
 ```
 
