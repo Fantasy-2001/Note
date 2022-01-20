@@ -1,6 +1,6 @@
 # C 语言
 
-
+[TOC]
 
 ## 转义字符
 
@@ -157,4 +157,27 @@ sizeof i;
 | *静态无链接*   | 静态   | 块     | 无   | 块内，使用关键字 **static**       |
 
 > register 声明后，并不一定会存到寄存器中，他只是一种请求。及时不存在寄存器中也不能对其取地址。同时可以存为register的类型可不多，因为有些类型太大了，寄存器存不下。
+
+
+
+## 字符串处理函数
+
+* 获取字符串的长度：**strlen**
+* 拷贝字符串：**strcpy** 和 **strncpy**（后者比前者多一个参数，用于约束字符数）
+* 连接字符串：**strcat** 和 **strncat**（后者比前者多一个参数，用于约束字符数）
+* 比较字符串：**strcmp** 和 **strncmp**（后者比前者多一个参数，用于约束字符数）
+
+```C
+char str[] = "Love";
+char str2[] = "you";
+char str3[100];
+printf("%d",strlen(str));	//>>4
+strcpy(str3, str);			//>>Love
+strncpy(str3, str2, 3);		//>>youe(只复制了前三位，最后的e没有被覆盖)
+strcat(str3, str);			//>>youeLove
+strncat(str3, str2, 2);		//>>youeLoveyo
+if(strcmp(str, str2))		//>>（从第一个字符开始依次对比每个字符的ASCII码，第一个字符串的字符小于第二个字符串的第一个字符，返回一个小于0的值，反之大于0的值。如果相同找下一个字符，完全相等返回0）
+```
+
+
 
