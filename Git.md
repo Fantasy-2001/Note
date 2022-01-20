@@ -1,5 +1,7 @@
 # Git
 
+![img](https://gitee.com/Fantasy2001/images/raw/master/Markdown/Git/git.jpg)
+
 
 
 ## Git配置
@@ -126,6 +128,8 @@ git push -u origin main
 ```Git
 //查看版本编号
 git log
+//可以查看所有分支的所有操作记录（包括已经被删除的 commit 记录和 reset 的操作）
+git reflog
 //回退至目标版本，但目标版本之后提交都不存在了
 git reset --hard 版本编号
 //把暂存区中的文件拉回工作区
@@ -139,7 +143,28 @@ git revert -n 版本号
 git commit -m "版本号"
 //推送
 git push
+```
+
+### pull & fetch
+
+> 与git pull相比git fetch相当于是从远程获取最新版本到本地，但不会自动merge。如果需要有选择的合并git fetch是更好的选择。效果相同时git pull将更为快捷;
+
+```Git
+git fetch origin master		
+//取回 origin 主机的 master 分支，取回后会返回一个FETCH_HEAD
+git log -p FETCH_HEAD		//该版本的更新内容
+git merge FETCH_HEAD 		//合并版本
+
+git pull origin master		//就 master 分支更新取回，并与本地指定分支合并。
+```
 
 
+
+### git clone浅拷贝
+
+> 该指令只clone最近的一次commit。项目里面的文件会被完整地被下载下来，但是历史不能完全保留。因此，如果不关系项目的历史，那就完全可以使用浅拷贝来完成clone。这样可以结局get clone慢的问题。
+
+```Git
+git clone --depth=1 https://(吧啦吧啦……)
 ```
 
