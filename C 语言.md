@@ -141,7 +141,7 @@ sizeof i;
 - auto（自动变量）
 - register（寄存器变量）
 - static（静态局部变量）
-- extern
+- extern 
 - typedef
 
 
@@ -157,6 +157,31 @@ sizeof i;
 | *静态无链接*   | 静态   | 块     | 无   | 块内，使用关键字 **static**       |
 
 > register 声明后，并不一定会存到寄存器中，他只是一种请求。及时不存在寄存器中也不能对其取地址。同时可以存为register的类型可不多，因为有些类型太大了，寄存器存不下。
+>
+> 如果在函数中的内部存在一个与全局变量同名的局部变量，编译器不会报错，而是在函数中屏蔽全局变量（也就是说在这个函数中，全局变量不起作用）
+>
+> 如果在定义点之前的函数想引用该全局变量，则应该在引用之前使用 **extern** 对该变量作 “外部变量声明”，表示该变量是一个已经定义的外部变量
+
+```C
+#include <stdio.h>
+
+void max(int x, int y);
+
+void max(int x, int y)
+{
+    //外部变量声明
+    extern int g_x;
+    extern int g_y;
+    g_x++;
+    g_y++;
+    /*code*/
+}
+//定义两个全局变量
+int g_x = 10;
+int g_y = 20;
+```
+
+
 
 
 
@@ -317,4 +342,550 @@ printf("%s", (char *)p);//因为取值是字符串，字符串会从第一个字
 ```C
 #define NULL ((void *)0)	//NULL 是一个宏定义
 ```
+
+
+
+### 指向指针的指针
+
+```C
+int num = 520;
+int *p = &num;
+int **pp = &p;		//指向指针的指针
+
+//*pp就是将 &p 的值取出是 &num
+//**pp 则是 520
+```
+
+
+
+### 指向常量的指针
+
+> 指针可以修改为指向不同的常量
+>
+> 指针可以修改为指向不同的变量
+>
+> 可以通过解引用来读取指针指向的数据
+>
+> 不可以通过解引用修改指针指向的数据
+
+```C
+int num = 213;
+const int cnum = 213;
+int * const p = &num;			//指向非常量的常量指针
+const int * const p2 = &num;	//指向常量的常量指针
+p = &num;	//XXX
+*p = 1024;	//OOO
+```
+
+* 指向非常量的常量指针
+  * 指针自身不可以被修改
+  * 指针指向的值可以被修改
+* 指向常量的常量指针
+  * 指针自身不可能被修改
+  * 指针指向的值也不可以被修改
+
+
+
+## 函数
+
+```C
+#include <stdio.h>
+int max(int,int);		//定义变量，可以不写，但写了阅读性好，形参名可以不写
+void shu(int arr[]);	//传递的是实参的地址，是可以在函数内修改实参的元素
+void sum(int n, ...);	//可变参数，表明参数个数不确定
+
+int max(int a, int b)
+{
+    /*code*/
+}
+```
+
+
+
+### 指针函数
+
+> 使用指针变量作为函数的返回值，就是指针函数。
+>
+> 不要返回局部变量的指针
+
+```C
+char * getStr();	//指针函数
+```
+
+
+
+### 函数指针
+
+> 指向函数的指针
+
+```C
+int *p(int a);		//指针函数
+int (*p)();		//函数指针
+
+int *p(int a)
+{
+    /*code*/
+}
+
+int main()
+{
+    int (*fp)(int);		//定义一个函数指针
+    fp = p;				//将函数的地址赋值给指针
+    (*fp)(12);			//通过指针调用函数,可以写fp(12)但为了和普通函数区分开来
+    
+}
+```
+
+
+
+## 内存管理
+
+```C
+malloc	//申请动态内存空间
+free	//释放动态内存空间
+calloc	//申请并初始化一系列内存空间
+realloc	//重新分配内存空间
+```
+
+
+
+### malloc
+
+```C
+//函数原型
+void *malloc(size_t size);
+```
+
+> 1. **malloc** 函数向系统申请分配 size 个字节的内存空间，并返回一个指向这块空间的指针 
+> 2. 如果函数调用成功，返回一个指向申请的内存空间的指针，由于返回类型是 void 指针（void *），所以它可以被转换成任何类型的数据；如果函数调用失败，返回值是 NULL 。另外，如果 size 参数设置为0，返回值也可能是 NULL，但这并不意味着函数调用失败。
+
+```C
+可以被转换成任何类型的数据int *ptr;
+ptr = malloc(sizeof(int));	//空指针可以转换成任何类型，写(int *)可以增强语义
+```
+
+
+
+### free
+
+```C
+void free(void *ptr);
+```
+
+> **free** 函数释放 ptr 参数指向的内存空间。该内存空间必须是由 **malloc**、**calloc** 或 **realloc** 函数申请的。否则，该函数将导致未定义行为。如果 ptr 参数是 NULL，则不执行任何操作。注意：该函数并不会修改 ptr 参数的值，所以调用后它们仍然指向原来的地方（变为非法空间）。
+
+```C
+free(ptr);
+```
+
+> 导致内存泄漏主要有两种情况：
+>
+> * 隐式内存泄漏（即用完内存块没有及时使用 free 函数释放）
+> * 丢失内存块地址（将申请内存块的指针修改为别的地址）
+
+
+
+### calloc
+
+```C
+void *calloc(size_t nmemb, size_t size);
+```
+
+> **calloc** 函数在内存中动态地申请 **nmemb** 个长度为 **size** 的连续内存空间（即申请的总空间尺寸为 **nmemb * size**），这些内存空间全部被初始化为0。
+>
+> **calloc** 函数与 **malloc** 函数的一个重要区别是：
+>
+> * **calloc** 函数在申请完内存空间后，自动初始化该内存空间为零。
+> * **malloc** 函数不进行初始化操作，里边数据是随机的
+
+```C
+int *ptr = (int *)calloc(8, sizeof(int));
+```
+
+
+
+### realloc
+
+```C
+void *realloc(void *ptr, size_t size);
+```
+
+> 1. **realloc** 函数修改 ptr 指向的内存空间大小为 size 字节
+> 2. 如果新分配的内存空间比原来的大，则旧内存块的数据不会发生改变；如果新的内存空间大小小于旧的内存空间，可能会导致数据丢失，慎用！
+> 3. 该函数将移动内存空间的数据并返回新的指针 
+> 4. 如果 ptr 参数为 NULL ，那么调用该函数就向当于调用 **malloc(size)**
+> 5. 如果 size 参数为 0，并且 ptr 参数不为 NULL，那么调用该函数就相当于调用**free(size)**
+> 6. 除非 ptr 参数为NULL，否则 ptr 的值必须由先前调用 **malloc**、**calloc** 或 **realloc** 函数返回
+
+
+
+### 初始化内存空间
+
+> 以 **mem** 开头的函数被编入字符串标准库，函数的声明包含在 string.h 这个头文件中
+>
+> * **memset**			（使用一个常量字节填充内存空间）
+> * **memcpy**           （拷贝内存空间）
+> * **memmove**       （拷贝内存空间）
+> * **memcmp**         （比较内存空间）
+> * **memchr**           （在内存空间中搜索一个字符）
+
+```C
+#include <stdio.h>
+#include <string.h>
+
+void main(void)
+{
+    int *ptr = NULL;
+    ptr = (int *)malloc(sizeof(int));
+    memset(ptr, 0, sizeof(int));
+}
+```
+
+ 
+
+### 内存布局规律
+
+![image-20220125231606584](https://gitee.com/Fantasy2001/images/raw/master/Markdown/C%E8%AF%AD%E8%A8%80_%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E8%A7%84%E5%BE%8B.png)
+
+1. **代码段**（Text segment）通常是指用来存放程序执行代码的一块内存区域。这部分区域的大小在程序运行前就已经确定，并且内存区域通常属于只读。在代码段中，也有可能包含一些只读的常数变量，例如字符串常量。
+2. **数据段**（Initialized data segment）通常用来存放==已经初始化的全局变量和局部静态变量==
+3. **BSS段**（Bss segment/Uninitialized data segment）通常是指用来存放程序中==未初始化的全局变量==的一块内存区域。BSS 是英文 Block Started by Symbol 的简称，这个区段中的数据在程序运行前将被==自动初始化为数字0。==
+4. **堆**是用于存放进程运行中被动态分配的内存段，它的大小并不固定，可动态扩展或缩小。当进程调用 ==**malloc**== 等函数分配内存时，新分配的内存就被动态添加到堆上；当利用 ==**free**== 等函数释放内存时，被释放的内存从堆中被剔除。
+5. **栈**一般指的就是平时听到的堆栈。栈是函数执行的内存区域，通常和堆共享同一片区域。==局部变量、函数参数、函数返回值。==
+
+
+
+#### 堆和栈的区别
+
+**申请方式：**
+
+* 堆由程序员手动申请
+* 栈由系统自动分配
+
+
+
+**释放方式：**
+
+* 堆由程序员手动释放
+* 栈由系统自动释放
+
+
+
+**生存周期**
+
+* 堆的生存周期由动态申请到程序员主动释放为止，不同函数之间均可自由访问
+* 栈的生存周期由函数调用开始到函数返回时结束，函数之间的局部变量不能互相访问
+
+
+
+**发展方向**
+
+* 堆和其他区段一样，都是从低地址向高地址发展
+* 栈则相反，是由高地址向低地址发展
+
+
+
+## 宏定义
+
+要将 C 语言翻译成机器语言，简单来说需要两个步骤：编译 --> 链接
+
+对于 GCC 来说，执行 gcc test.c 命令，其实相当于依次执行下面四个步骤：
+
+- 预处理（Pre-Processing）-- 对 C 语言进行预处理，生成 test.i 文件
+- 编译（Compiling）-- 将上一步生成的 test.i 文件编译生成汇编语言文件，后缀名为 test.s
+- 汇编（Assembling）-- 将汇编语言文件 test.s 经过汇编，生成目标文件，后缀名为 test.o
+- 链接（Linking）-- 将各个模块的 test.o 文件链接起来，生成最终的可执行文件
+
+
+
+> *注：前三个步骤均属于编译过程。*
+
+
+
+**预处理**
+
+![image-20220126141146016](https://gitee.com/Fantasy2001/images/raw/master/Markdown/C%E8%AF%AD%E8%A8%80_%E9%A2%84%E5%A4%84%E7%90%86.png)
+
+
+
+### 不带参数的宏定义
+
+1. 为了和普通的变量进行区分，宏的名字通常我们约定是全部由大写字母组成
+2. 宏定义只是简单地进行替换，并且由于预处理是在编译之前进行，而编译工作的任务之一就是语法检查，所以编译器不会对宏定义进行语法检查
+3. 宏定义不是说明或语句，在末尾不必加分号
+4. 宏定义的作用域是从定义的位置开始到整个程序结束
+5. 可以用 #undef 来终止宏定义的作用域
+6. 宏定义允许嵌套
+
+```C
+#include <stdio.h>
+#define PI 3.14
+#define O PI * 12		//嵌套在宏定义中使用了别的宏
+
+int main(void)
+{
+#undef PI				//不需要缩进
+    print("%f", PI);	//报错
+    return 0;
+}
+```
+
+
+
+### 带参数的宏定义
+
+```C
+#include <stdio.h>
+#define MAX(x,y) (((x) > (y)) ? (x) : (y))	//不用声明类型，不用括号使用表达式会出问题
+
+int main(void)
+{
+    int a = 10, b = 12;
+    printf("最大的数：%d", MAX(a,b));
+    return 0;
+}
+```
+
+
+
+### 内联函数
+
+> 引入内联函数来解决程序中函数调用的效率问题
+>
+> 函数每一次使用都需要在栈中开辟空间，因为宏定义只是简单的替换，但使用宏定义函数，会有参数操作时的问题，因此使用 **inline** 关键字进行嵌入替换，也不会出现宏定义的参数问题
+
+```c
+#include <stdio.h>
+
+inline int square(int x);		//使用 inline 关键字
+
+inline int square(int x)		//使用 inline 关键字
+{
+    /*code*/
+}
+```
+
+> 因为内联函数嵌入调用者代码中的操作是一种优化操作，因此只有进行优化编译时才会执行代码嵌入处理。若编译过程中没有使用优化选项 ‘-o’，那么内联函数的代码就不会被真正地嵌入到调用者代码中，而是只作为普通函数调用来处理。所以编译的时候应该这么写；gcc name.c -o && ./a.out
+
+
+
+### \# 和 \#\#
+
+1. **\#** 和 **\#\#** 是两个预处理运算符。
+2. 在带参数的宏定义中，**#** 运算符后面应该跟一个参数，预处理器会把这个参数转换为一个字符串。
+3. **\#\#** 运算符被称为记号连接运算符，比如我们可以使用 **\#\#** 运算符连接两个参数。 
+
+```C
+#include <stdio.h>
+#define STR(s) # s
+#define TOGETHER(x,y) x ## y
+
+int main(void)
+{
+    printf(STR(Hello %s), STR(World));		//Hello World
+    printf("%d\n", TOGETHER(6,9));			//69
+    return 0;
+}
+```
+
+
+
+### 可变参数 
+
+```C
+#include <stdio.h>
+
+#define PRINT(...) printf(# __VA_ARGS__)	//__VA_ARGS__(全部可变参数)
+
+int main(void)
+{
+    PRINT(123,456,789);		//123456789
+    return 0;
+}
+```
+
+
+
+## 结构体
+
+
+
+### 声明
+
+```C
+#include <stdio.h>
+
+/* struct 结构体名称 结构体变量名 */
+struct Book
+{
+    char title[128];
+    char author[40];
+    float price;
+    unsigned int date;
+    char publisher[40];
+};		//分号结尾，可以在反大括号后写变量名{code} Book;
+
+int main(void)
+{
+    struct Book book;
+    return 0;
+}
+```
+
+要访问结构体成员，用（ **.** ）运算符。比如 book.title。
+
+
+
+### 初始化变量
+
+```C
+//方法一
+struct Book book = {
+    "1",
+    "2",
+    "3"
+};
+
+//方法二（C99后）
+struct Book book = {.price = 48.8};		//只初始化一个成员其他都是未初始化
+
+//方法三（指定成员就不用按顺序初始化）
+struct Book book = {
+    .publisher = "1",
+    .price = 48.8,
+    .date = 20171111
+}
+
+//例子
+struct A 
+{
+    char a;
+    int b;
+    char c;
+} a = {'x', 520, 'o'};			//在定义时也可初始化，与变量一样。
+
+printf("size of a = %d\n", sizeof(a));		//内存对齐后的结果：12
+```
+
+ 
+
+### 结构体嵌套
+
+```C
+struct Book
+{
+    char title[128];
+    char author[40];
+    float price;
+    unsigned int date;			//用另一个结构体作为成员
+    char publisher[40];
+} book = {					//定义并初始化
+    .date = {2022,1,27}
+};
+
+struct Date
+{
+    int year;
+    int month;
+    int day;
+};
+
+printf("%d-%d-%d", book.date.year, book.date.month, book.date.day);	//访问
+```
+
+
+
+### 结构体数组
+
+1. 第一种方法是在声明结构体的时候进行定义
+2. 第二种是先声明一个结构体类型（比如上面 Book），再用此类型定义一个结构体数组
+
+```C
+//一
+struct 结构体名称
+{
+    结构体成员;
+} 数组名[长度];
+
+//二
+struct 结构体名称
+{
+    结构体成员;
+};
+struct 结构体名称 数组名[长度];		//定义结构体数组
+```
+
+
+
+### 结构体指针
+
+```C
+struct Book * pt;
+pt = &book;		//使用取值运算符，因为结构体的变量名不指向结构体的地址
+```
+
+> 访问结构体成员的两种方法：
+>
+> 1. (*结构体指针).成员名		
+>
+>    //因为 **.** 的优先级比 **\*** 高，用小括号先解引用，再用 **.** 获取成员值
+>
+> 2. 结构体指针 -> 成员名
+
+
+
+### 结构体变量
+
+和普通变量一致，都可作为参数，返回值等使用
+
+```C
+struct Date
+{
+    int year;
+    int month;
+    int day;
+};
+
+struct Date getDate(struct Date date);
+```
+
+> 结构体变量可能导致空间或时间上的开销大，用指针！
+
+```C
+struct Date
+{
+    int year;
+    int month;
+    int day;
+};
+
+void getDate(struct Date *date);
+
+void getDate(struct Date *date)
+{
+    printf("%d-%d-%d", date->year, date->month, date->day); 
+}
+```
+
+
+
+### 动态申请结构体
+
+```C
+struct Date
+{
+    int year;
+    int month;
+    int day;
+};
+
+struct Date *date1, *date2;
+date1 = (struct Date *)malloc(sizeof(struct Date));
+date2 = (struct Date *)malloc(sizeof(struct Date));
+/*code*/
+free(date1);	//释放
+free(date2);	//释放
+```
+
+
 
